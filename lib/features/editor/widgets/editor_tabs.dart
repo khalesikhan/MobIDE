@@ -1,45 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/editor_provider.dart';
 
 class EditorTabs extends StatelessWidget {
   const EditorTabs({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final editorProvider =
+        context.watch<EditorProvider>();
+
+    final files = editorProvider.openFiles;
+
     return Container(
       height: 40,
       color: const Color(0xFF2D2D2D),
 
-      child: ListView(
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        itemCount: files.length,
 
-        children: [
+        itemBuilder: (context, index) {
+          final file = files[index];
 
-          _buildTab(
-            name: 'main.dart',
-            isActive: true,
-          ),
-
-          _buildTab(
-            name: 'home_screen.dart',
-          ),
-
-          _buildTab(
-            name: 'app_theme.dart',
-          ),
-        ],
+          return _buildTab(
+            context: context,
+            index: index,
+            name: file.isDirty
+                ? '${file.name} *'
+                : file.name,
+            isActive:
+                editorProvider.activeIndex ==
+                index,
+          );
+        },
       ),
     );
   }
 
   Widget _buildTab({
+    required BuildContext context,
+    required int index,
     required String name,
-    bool isActive = false,
+    required bool isActive,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
+    final editorProvider =
+        context.read<EditorProvider>();
 
+    return Container(
       decoration: BoxDecoration(
         color: isActive
             ? const Color(0xFF1E1E1E)
@@ -47,35 +56,71 @@ class EditorTabs extends StatelessWidget {
 
         border: Border(
           right: BorderSide(
-            color: Colors.black.withOpacity(0.3),
+            color:
+                Colors.black.withOpacity(0.3),
           ),
         ),
       ),
 
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
+          InkWell(
+            onTap: () {
+              editorProvider.setActiveTab(
+                index,
+              );
+            },
 
-          const Icon(
-            Icons.insert_drive_file,
-            size: 16,
-            color: Colors.lightBlue,
-          ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(
+                horizontal: 16,
+              ),
 
-          const SizedBox(width: 8),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.insert_drive_file,
+                    size: 16,
+                    color:
+                        Colors.lightBlue,
+                  ),
 
-          Text(
-            name,
-            style: const TextStyle(
-              color: Colors.white70,
+                  const SizedBox(width: 8),
+
+                  Text(
+                    name,
+                    style:
+                        const TextStyle(
+                      color:
+                          Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
-          const SizedBox(width: 8),
+          InkWell(
+            onTap: () {
+              editorProvider.closeTab(
+                index,
+              );
+            },
 
-          const Icon(
-            Icons.close,
-            size: 16,
-            color: Colors.white54,
+            child: const Padding(
+              padding: EdgeInsets.only(
+                left: 4,
+                right: 8,
+              ),
+
+              child: Icon(
+                Icons.close,
+                size: 16,
+                color: Colors.white54,
+              ),
+            ),
           ),
         ],
       ),

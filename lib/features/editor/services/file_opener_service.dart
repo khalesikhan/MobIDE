@@ -1,22 +1,20 @@
 import 'dart:io';
 
 import '../models/open_file.dart';
-import 'open_files_manager.dart';
+import '../providers/editor_provider.dart';
 
 class FileOpenerService {
-
-  Future<void> openFile(
-    String path,
-  ) async {
-
+  Future<void> openFile({
+    required String path,
+    required EditorProvider editorProvider,
+  }) async {
     final file = File(path);
 
     if (!await file.exists()) {
       return;
     }
 
-    final content =
-        await file.readAsString();
+    final content = await file.readAsString();
 
     final openFile = OpenFile(
       path: path,
@@ -24,8 +22,6 @@ class FileOpenerService {
       content: content,
     );
 
-    OpenFilesManager.openFile(
-      openFile,
-    );
+    editorProvider.openFile(openFile);
   }
 }

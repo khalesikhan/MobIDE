@@ -15,6 +15,33 @@ class _CodeEditorState extends State<CodeEditor> {
       TextEditingController();
 
   String currentPath = '';
+  String lastLoadedContent = '';
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  void loadFileContent(
+    String path,
+    String content,
+  ) {
+    if (currentPath != path ||
+        lastLoadedContent != content) {
+      currentPath = path;
+      lastLoadedContent = content;
+
+      controller.text = content;
+
+      controller.selection =
+          TextSelection.fromPosition(
+        TextPosition(
+          offset: controller.text.length,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,18 +65,10 @@ class _CodeEditorState extends State<CodeEditor> {
       );
     }
 
-    if (currentPath != activeFile.path) {
-      currentPath = activeFile.path;
-
-      controller.text = activeFile.content;
-
-      controller.selection =
-          TextSelection.fromPosition(
-        TextPosition(
-          offset: controller.text.length,
-        ),
-      );
-    }
+    loadFileContent(
+      activeFile.path,
+      activeFile.content,
+    );
 
     return Container(
       color: const Color(0xFF1E1E1E),
@@ -62,7 +81,9 @@ class _CodeEditorState extends State<CodeEditor> {
         maxLines: null,
 
         onChanged: (value) {
-          editorProvider.updateContent(value);
+          editorProvider.updateContent(
+            value,
+          );
         },
 
         style: const TextStyle(
