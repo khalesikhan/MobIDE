@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../services/open_files_manager.dart';
+import '../providers/editor_provider.dart';
 
 class CodeEditor extends StatefulWidget {
   const CodeEditor({super.key});
@@ -10,30 +11,45 @@ class CodeEditor extends StatefulWidget {
 }
 
 class _CodeEditorState extends State<CodeEditor> {
-  late TextEditingController controller;
+  final TextEditingController controller =
+      TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-
-    controller = TextEditingController();
-
-    loadActiveFile();
-  }
-
-  void loadActiveFile() {
-    final activeFile =
-        OpenFilesManager.activeFile;
-
-    controller.text =
-        activeFile?.content ??
-        '// No file opened';
-  }
+  String currentPath = '';
 
   @override
   Widget build(BuildContext context) {
+    final editorProvider =
+        context.watch<EditorProvider>();
 
-    loadActiveFile();
+    final activeFile =
+        editorProvider.activeFile;
+
+    if (activeFile == null) {
+      return Container(
+        color: const Color(0xFF1E1E1E),
+        child: const Center(
+          child: Text(
+            'No file opened',
+            style: TextStyle(
+              color: Colors.white54,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (currentPath != activeFile.path) {
+      currentPath = activeFile.path;
+
+      controller.text = activeFile.content;
+
+      controller.selection =
+          TextSelection.fromPosition(
+        TextPosition(
+          offset: controller.text.length,
+        ),
+      );
+    }
 
     return Container(
       color: const Color(0xFF1E1E1E),
@@ -42,8 +58,12 @@ class _CodeEditorState extends State<CodeEditor> {
         controller: controller,
 
         expands: true,
-        maxLines: null,
         minLines: null,
+        maxLines: null,
+
+        onChanged: (value) {
+          editorProvider.updateContent(value);
+        },
 
         style: const TextStyle(
           color: Colors.white70,
@@ -55,7 +75,6 @@ class _CodeEditorState extends State<CodeEditor> {
 
         decoration: const InputDecoration(
           border: InputBorder.none,
-
           contentPadding:
               EdgeInsets.all(12),
         ),
