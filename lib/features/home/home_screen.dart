@@ -15,7 +15,6 @@ class HomeScreen extends StatelessWidget {
       create: (_) => EditorProvider(),
       child: Scaffold(
         backgroundColor: const Color(0xFF1E1E1E),
-
         body: SafeArea(
           child: Column(
             children: [
@@ -23,26 +22,63 @@ class HomeScreen extends StatelessWidget {
               Container(
                 height: 50,
                 color: const Color(0xFF252526),
+                child: Consumer<EditorProvider>(
+                  builder: (
+                    context,
+                    editorProvider,
+                    child,
+                  ) {
+                    return Row(
+                      children: [
+                        const SizedBox(width: 16),
 
-                child: Row(
-                  children: const [
-                    SizedBox(width: 16),
+                        const Icon(
+                          Icons.code,
+                          color: Color(0xFF3794FF),
+                        ),
 
-                    Icon(
-                      Icons.code,
-                      color: Color(0xFF3794FF),
-                    ),
+                        const SizedBox(width: 10),
 
-                    SizedBox(width: 10),
+                        const Text(
+                          'MobIDE',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
 
-                    Text(
-                      'MobIDE',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                        const Spacer(),
+
+                        IconButton(
+                          icon: const Icon(
+                            Icons.save,
+                            color: Colors.white,
+                          ),
+                          tooltip: 'Save File',
+                          onPressed: () async {
+                            await editorProvider
+                                .saveCurrentFile();
+
+                            if (!context.mounted) {
+                              return;
+                            }
+
+                            ScaffoldMessenger.of(
+                              context,
+                            ).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'File saved',
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(width: 8),
+                      ],
+                    );
+                  },
                 ),
               ),
 
@@ -53,7 +89,6 @@ class HomeScreen extends StatelessWidget {
                     Container(
                       width: 70,
                       color: const Color(0xFF333333),
-
                       child: Column(
                         children: const [
                           SizedBox(height: 20),
@@ -104,39 +139,4 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              // Status Bar
-              Container(
-                height: 40,
-                color: const Color(0xFF007ACC),
-
-                child: Row(
-                  children: const [
-                    SizedBox(width: 16),
-
-                    Text(
-                      'Dart',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-
-                    Spacer(),
-
-                    Text(
-                      'UTF-8',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-
-                    SizedBox(width: 16),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+              //
