@@ -303,6 +303,67 @@ await fileService.deletePath(
 await loadProjectFiles();
 
 }
+Future<void> createFileInFolder(
+  ProjectFile folder,
+) async {
+  final controller =
+      TextEditingController();
+
+  final fileName =
+      await showDialog<String>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text(
+          'New File',
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration:
+              const InputDecoration(
+            hintText: 'example.dart',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Cancel',
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                controller.text.trim(),
+              );
+            },
+            child: const Text(
+              'Create',
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (fileName == null ||
+      fileName.isEmpty) {
+    return;
+  }
+
+  final path =
+      '${folder.path}/$fileName';
+
+  await fileService.createFile(
+    path,
+  );
+
+  await loadProjectFiles();
+}
 @override
 Widget build(BuildContext context) {
 return Container(
@@ -418,6 +479,17 @@ Widget buildNode(
               deleteNode(file);
             },
           ),
+          IconButton(
+  icon: const Icon(
+    Icons.note_add,
+    size: 16,
+    color: Colors.green,
+  ),
+  tooltip: 'New File',
+  onPressed: () {
+  createFileInFolder(file);
+},
+),
         ],
       ),
       children: file.children
