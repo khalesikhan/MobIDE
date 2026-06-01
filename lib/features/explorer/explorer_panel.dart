@@ -8,367 +8,383 @@ import '../projects/models/project_file.dart';
 import '../projects/project_explorer_service.dart';
 
 class ExplorerPanel extends StatefulWidget {
-  const ExplorerPanel({super.key});
+const ExplorerPanel({super.key});
 
-  @override
-  State<ExplorerPanel> createState() =>
-      _ExplorerPanelState();
+@override
+State<ExplorerPanel> createState() =>
+_ExplorerPanelState();
 }
 
 class _ExplorerPanelState
-    extends State<ExplorerPanel> {
-  static const String projectRoot =
-      '/storage/emulated/0/FlutterProjects/MobIDE/lib';
+extends State<ExplorerPanel> {
+static const String projectRoot =
+'/storage/emulated/0/FlutterProjects/MobIDE/lib';
 
-  final ProjectExplorerService explorerService =
-      ProjectExplorerService();
+final ProjectExplorerService explorerService =
+ProjectExplorerService();
 
-  final FileOpenerService fileOpenerService =
-      FileOpenerService();
+final FileOpenerService fileOpenerService =
+FileOpenerService();
 
-  final FileService fileService =
-      FileService();
+final FileService fileService =
+FileService();
 
-  List<ProjectFile> files = [];
+List<ProjectFile> files = [];
 
-  @override
-  void initState() {
-    super.initState();
-    loadProjectFiles();
-  }
+@override
+void initState() {
+super.initState();
+loadProjectFiles();
+}
 
-  Future<void> loadProjectFiles() async {
-    final result =
-        await explorerService.loadFiles(
-      projectRoot,
-    );
+Future<void> loadProjectFiles() async {
+final result =
+await explorerService.loadFiles(
+projectRoot,
+);
 
-    if (!mounted) {
-      return;
-    }
+if (!mounted) {  
+  return;  
+}  
 
-    setState(() {
-      files = result;
-    });
-  }
+setState(() {  
+  files = result;  
+});
 
-  Future<void> createNewFile() async {
-    final controller =
-        TextEditingController();
+}
 
-    final fileName =
-        await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            'New File',
-          ),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration:
-                const InputDecoration(
-              hintText: 'example.dart',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'Cancel',
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(
-                  context,
-                  controller.text.trim(),
-                );
-              },
-              child: const Text(
-                'Create',
-              ),
-            ),
-          ],
-        );
-      },
-    );
+Future<void> createNewFile() async {
+final controller =
+TextEditingController();
 
-    if (fileName == null ||
-        fileName.isEmpty) {
-      return;
-    }
+final fileName =  
+    await showDialog<String>(  
+  context: context,  
+  builder: (context) {  
+    return AlertDialog(  
+      title: const Text(  
+        'New File',  
+      ),  
+      content: TextField(  
+        controller: controller,  
+        autofocus: true,  
+        decoration:  
+            const InputDecoration(  
+          hintText: 'example.dart',  
+        ),  
+      ),  
+      actions: [  
+        TextButton(  
+          onPressed: () {  
+            Navigator.pop(context);  
+          },  
+          child: const Text(  
+            'Cancel',  
+          ),  
+        ),  
+        ElevatedButton(  
+          onPressed: () {  
+            Navigator.pop(  
+              context,  
+              controller.text.trim(),  
+            );  
+          },  
+          child: const Text(  
+            'Create',  
+          ),  
+        ),  
+      ],  
+    );  
+  },  
+);  
 
-    final path =
-        '$projectRoot/$fileName';
+if (fileName == null ||  
+    fileName.isEmpty) {  
+  return;  
+}  
 
-    await fileService.createFile(
-      path,
-    );
+final path =  
+    '$projectRoot/$fileName';  
 
-    await loadProjectFiles();
+await fileService.createFile(  
+  path,  
+);  
 
-    await fileOpenerService.openFile(
-      path: path,
-      editorProvider:
-          context.read<EditorProvider>(),
-    );
-  }
+await loadProjectFiles();  
 
-  Future<void> createNewFolder() async {
-    final controller =
-        TextEditingController();
+await fileOpenerService.openFile(  
+  path: path,  
+  editorProvider:  
+      context.read<EditorProvider>(),  
+);
 
-    final folderName =
-        await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            'New Folder',
-          ),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration:
-                const InputDecoration(
-              hintText: 'folder_name',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'Cancel',
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(
-                  context,
-                  controller.text.trim(),
-                );
-              },
-              child: const Text(
-                'Create',
-              ),
-            ),
-          ],
-        );
-      },
-    );
+}
 
-    if (folderName == null ||
-        folderName.isEmpty) {
-      return;
-    }
+Future<void> createNewFolder() async {
+final controller =
+TextEditingController();
 
-    await fileService.createFolder(
-      '$projectRoot/$folderName',
-    );
+final folderName =  
+    await showDialog<String>(  
+  context: context,  
+  builder: (context) {  
+    return AlertDialog(  
+      title: const Text(  
+        'New Folder',  
+      ),  
+      content: TextField(  
+        controller: controller,  
+        autofocus: true,  
+        decoration:  
+            const InputDecoration(  
+          hintText: 'folder_name',  
+        ),  
+      ),  
+      actions: [  
+        TextButton(  
+          onPressed: () {  
+            Navigator.pop(context);  
+          },  
+          child: const Text(  
+            'Cancel',  
+          ),  
+        ),  
+        ElevatedButton(  
+          onPressed: () {  
+            Navigator.pop(  
+              context,  
+              controller.text.trim(),  
+            );  
+          },  
+          child: const Text(  
+            'Create',  
+          ),  
+        ),  
+      ],  
+    );  
+  },  
+);  
 
-    await loadProjectFiles();
-  }
+if (folderName == null ||  
+    folderName.isEmpty) {  
+  return;  
+}  
 
-  Future<void> renameNode(
-    ProjectFile file,
-  ) async {
-    final controller =
-        TextEditingController(
-      text: file.name,
-    );
+await fileService.createFolder(  
+  '$projectRoot/$folderName',  
+);  
 
-    final newName =
-        await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(
-            file.isDirectory
-                ? 'Rename Folder'
-                : 'Rename File',
-          ),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'Cancel',
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(
-                  context,
-                  controller.text.trim(),
-                );
-              },
-              child: const Text(
-                'Rename',
-              ),
-            ),
-          ],
-        );
-      },
-    );
+await loadProjectFiles();
 
-    if (newName == null ||
-        newName.isEmpty ||
-        newName == file.name) {
-      return;
-    }
+}
 
-    final parentPath =
-        file.path.substring(
-      0,
-      file.path.lastIndexOf('/'),
-    );
+Future<void> renameNode(
+ProjectFile file,
+) async {
+final controller =
+TextEditingController(
+text: file.name,
+);
 
-    final newPath =
-        '$parentPath/$newName';
+final newName =  
+    await showDialog<String>(  
+  context: context,  
+  builder: (context) {  
+    return AlertDialog(  
+      title: Text(  
+        file.isDirectory  
+            ? 'Rename Folder'  
+            : 'Rename File',  
+      ),  
+      content: TextField(  
+        controller: controller,  
+        autofocus: true,  
+      ),  
+      actions: [  
+        TextButton(  
+          onPressed: () {  
+            Navigator.pop(context);  
+          },  
+          child: const Text(  
+            'Cancel',  
+          ),  
+        ),  
+        ElevatedButton(  
+          onPressed: () {  
+            Navigator.pop(  
+              context,  
+              controller.text.trim(),  
+            );  
+          },  
+          child: const Text(  
+            'Rename',  
+          ),  
+        ),  
+      ],  
+    );  
+  },  
+);  
 
-    await fileService.renamePath(
-      oldPath: file.path,
-      newPath: newPath,
-    );
+if (newName == null ||  
+    newName.isEmpty ||  
+    newName == file.name) {  
+  return;  
+}  
 
-    await loadProjectFiles();
-  }
+final parentPath =  
+    file.path.substring(  
+  0,  
+  file.path.lastIndexOf('/'),  
+);  
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 260,
-      color: const Color(0xFF252526),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding:
-                const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'EXPLORER',
-                    style: TextStyle(
-                      color:
-                          Colors.white70,
-                      fontSize: 12,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.add,
-                    color:
-                        Colors.white70,
-                    size: 18,
-                  ),
-                  tooltip: 'New File',
-                  onPressed:
-                      createNewFile,
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.create_new_folder,
-                    color:
-                        Colors.white70,
-                    size: 18,
-                  ),
-                  tooltip:
-                      'New Folder',
-                  onPressed:
-                      createNewFolder,
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.refresh,
-                    color:
-                        Colors.white70,
-                    size: 18,
-                  ),
-                  tooltip: 'Refresh',
-                  onPressed:
-                      loadProjectFiles,
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              children:
-                  files.map(buildNode).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+final newPath =  
+    '$parentPath/$newName';  
 
-  Widget buildNode(
-    ProjectFile file,
-  ) {
-    if (file.isDirectory) {
-      return ExpansionTile(
-        leading: const Icon(
-          Icons.folder,
-          color: Colors.amber,
-        ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                file.name,
-                style: const TextStyle(
-                  color: Colors.white70,
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(
-                Icons.edit,
-                size: 16,
-                color: Colors.white54,
-              ),
-              onPressed: () {
-                renameNode(file);
-              },
-            ),
-          ],
-        ),
-        children: file.children
-            .map(
-              (child) => Padding(
-                padding:
-                    const EdgeInsets.only(
-                  left: 12,
-                ),
-                child: buildNode(child),
-              ),
-            )
-            .toList(),
-      );
-    }
+await fileService.renamePath(  
+  oldPath: file.path,  
+  newPath: newPath,  
+);  
 
-    return ListTile(
-      dense: true,
+await loadProjectFiles();
+
+}
+Future<void> deleteNode(
+ProjectFile file,
+) async {
+final confirmed =
+await showDialog<bool>(
+context: context,
+builder: (context) {
+return AlertDialog(
+title: const Text(
+'Delete',
+),
+content: Text(
+file.isDirectory
+? 'Delete folder "${file.name}"?'
+: 'Delete file "${file.name}"?',
+),
+actions: [
+TextButton(
+onPressed: () {
+Navigator.pop(
+context,
+false,
+);
+},
+child: const Text(
+'Cancel',
+),
+),
+ElevatedButton(
+onPressed: () {
+Navigator.pop(
+context,
+true,
+);
+},
+child: const Text(
+'Delete',
+),
+),
+],
+);
+},
+);
+
+if (confirmed != true) {  
+  return;  
+}  
+
+await fileService.deletePath(  
+  file.path,  
+);  
+
+await loadProjectFiles();
+
+}
+@override
+Widget build(BuildContext context) {
+return Container(
+width: 260,
+color: const Color(0xFF252526),
+child: Column(
+crossAxisAlignment:
+CrossAxisAlignment.start,
+children: [
+Padding(
+padding:
+const EdgeInsets.all(12),
+child: Row(
+children: [
+const Expanded(
+child: Text(
+'EXPLORER',
+style: TextStyle(
+color:
+Colors.white70,
+fontSize: 12,
+fontWeight:
+FontWeight.bold,
+),
+),
+),
+IconButton(
+icon: const Icon(
+Icons.add,
+color:
+Colors.white70,
+size: 18,
+),
+tooltip: 'New File',
+onPressed:
+createNewFile,
+),
+IconButton(
+icon: const Icon(
+Icons.create_new_folder,
+color:
+Colors.white70,
+size: 18,
+),
+tooltip:
+'New Folder',
+onPressed:
+createNewFolder,
+),
+IconButton(
+icon: const Icon(
+Icons.refresh,
+color:
+Colors.white70,
+size: 18,
+),
+tooltip: 'Refresh',
+onPressed:
+loadProjectFiles,
+),
+],
+),
+),
+Expanded(
+child: ListView(
+children:
+files.map(buildNode).toList(),
+),
+),
+],
+),
+);
+}
+
+Widget buildNode(
+  ProjectFile file,
+) {
+  if (file.isDirectory) {
+    return ExpansionTile(
       leading: const Icon(
-        Icons.insert_drive_file,
-        color: Colors.lightBlue,
+        Icons.folder,
+        color: Colors.amber,
       ),
       title: Row(
         children: [
@@ -386,19 +402,84 @@ class _ExplorerPanelState
               size: 16,
               color: Colors.white54,
             ),
+            tooltip: 'Rename',
             onPressed: () {
               renameNode(file);
             },
           ),
+          IconButton(
+            icon: const Icon(
+              Icons.delete_outline,
+              size: 16,
+              color: Colors.redAccent,
+            ),
+            tooltip: 'Delete',
+            onPressed: () {
+              deleteNode(file);
+            },
+          ),
         ],
       ),
-      onTap: () async {
-        await fileOpenerService.openFile(
-          path: file.path,
-          editorProvider:
-              context.read<EditorProvider>(),
-        );
-      },
+      children: file.children
+          .map(
+            (child) => Padding(
+              padding: const EdgeInsets.only(
+                left: 12,
+              ),
+              child: buildNode(child),
+            ),
+          )
+          .toList(),
     );
   }
+
+  return ListTile(
+    dense: true,
+    leading: const Icon(
+      Icons.insert_drive_file,
+      color: Colors.lightBlue,
+    ),
+    title: Row(
+      children: [
+        Expanded(
+          child: Text(
+            file.name,
+            style: const TextStyle(
+              color: Colors.white70,
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(
+            Icons.edit,
+            size: 16,
+            color: Colors.white54,
+          ),
+          tooltip: 'Rename',
+          onPressed: () {
+            renameNode(file);
+          },
+        ),
+        IconButton(
+          icon: const Icon(
+            Icons.delete_outline,
+            size: 16,
+            color: Colors.redAccent,
+          ),
+          tooltip: 'Delete',
+          onPressed: () {
+            deleteNode(file);
+          },
+        ),
+      ],
+    ),
+    onTap: () async {
+      await fileOpenerService.openFile(
+        path: file.path,
+        editorProvider:
+            context.read<EditorProvider>(),
+      );
+    },
+  );
+}
 }
