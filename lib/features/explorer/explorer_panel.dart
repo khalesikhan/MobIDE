@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../editor/providers/editor_provider.dart';
+import '../editor/services/file_opener_service.dart';
 import '../projects/models/project_file.dart';
 import '../projects/project_explorer_service.dart';
-import '../editor/services/file_opener_service.dart';
 
 class ExplorerPanel extends StatefulWidget {
   const ExplorerPanel({super.key});
@@ -27,7 +29,6 @@ class _ExplorerPanelState
   @override
   void initState() {
     super.initState();
-
     loadProjectFiles();
   }
 
@@ -36,6 +37,10 @@ class _ExplorerPanelState
         await explorerService.loadFiles(
       '/storage/emulated/0/FlutterProjects/MobIDE/lib',
     );
+
+    if (!mounted) {
+      return;
+    }
 
     setState(() {
       files = result;
@@ -47,29 +52,44 @@ class _ExplorerPanelState
     return Container(
       width: 260,
       color: const Color(0xFF252526),
-
       child: Column(
         crossAxisAlignment:
             CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(12),
-            child: Text(
-              'EXPLORER',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
+          Padding(
+            padding:
+                const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'EXPLORER',
+                    style: TextStyle(
+                      color:
+                          Colors.white70,
+                      fontSize: 12,
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.refresh,
+                    color:
+                        Colors.white70,
+                    size: 18,
+                  ),
+                  onPressed:
+                      loadProjectFiles,
+                ),
+              ],
             ),
           ),
-
           Expanded(
             child: ListView(
               children:
-                  files.map((file) {
-                return buildNode(file);
-              }).toList(),
+                  files.map(buildNode).toList(),
             ),
           ),
         ],
@@ -82,49 +102,47 @@ class _ExplorerPanelState
   ) {
     if (file.isDirectory) {
       return ExpansionTile(
+        leading: const Icon(
+          Icons.folder,
+          color: Colors.amber,
+        ),
         title: Text(
           file.name,
           style: const TextStyle(
             color: Colors.white70,
           ),
         ),
-
-        leading: const Icon(
-          Icons.folder,
-          color: Colors.amber,
-        ),
-
-        children:
-            file.children.map((child) {
-          return Padding(
-            padding:
-                const EdgeInsets.only(
-              left: 12,
-            ),
-            child: buildNode(child),
-          );
-        }).toList(),
+        children: file.children
+            .map(
+              (child) => Padding(
+                padding:
+                    const EdgeInsets.only(
+                  left: 12,
+                ),
+                child: buildNode(child),
+              ),
+            )
+            .toList(),
       );
     }
 
     return ListTile(
       dense: true,
-
       leading: const Icon(
         Icons.insert_drive_file,
         color: Colors.lightBlue,
       ),
-
       title: Text(
         file.name,
         style: const TextStyle(
           color: Colors.white70,
         ),
       ),
-
-      onTap: () {
-        fileOpenerService.openFile(
-          file.path,
+      onTap: () async {
+        await fileOpenerService.openFile(
+          path: file.path,
+          editorProvider:
+              context.read<EditorProvider>(),
         );
       },
     );
