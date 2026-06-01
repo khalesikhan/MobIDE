@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../shared/services/file_service.dart';
 import '../editor/providers/editor_provider.dart';
 import '../editor/services/file_opener_service.dart';
 import '../projects/models/project_file.dart';
@@ -16,6 +17,9 @@ class ExplorerPanel extends StatefulWidget {
 
 class _ExplorerPanelState
     extends State<ExplorerPanel> {
+  static const String projectRoot =
+      '/storage/emulated/0/FlutterProjects/MobIDE/lib';
+
   final ProjectExplorerService
       explorerService =
       ProjectExplorerService();
@@ -23,6 +27,9 @@ class _ExplorerPanelState
   final FileOpenerService
       fileOpenerService =
       FileOpenerService();
+
+  final FileService fileService =
+      FileService();
 
   List<ProjectFile> files = [];
 
@@ -35,7 +42,7 @@ class _ExplorerPanelState
   Future<void> loadProjectFiles() async {
     final result =
         await explorerService.loadFiles(
-      '/storage/emulated/0/FlutterProjects/MobIDE/lib',
+      projectRoot,
     );
 
     if (!mounted) {
@@ -45,6 +52,75 @@ class _ExplorerPanelState
     setState(() {
       files = result;
     });
+  }
+
+  Future<void> createNewFile() async {
+    final controller =
+        TextEditingController();
+
+    final fileName =
+        await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            'New File',
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration:
+                const InputDecoration(
+              hintText:
+                  'example.dart',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                );
+              },
+              child: const Text(
+                'Cancel',
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                  controller.text.trim(),
+                );
+              },
+              child: const Text(
+                'Create',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (fileName == null ||
+        fileName.isEmpty) {
+      return;
+    }
+
+    final path =
+        '$projectRoot/$fileName';
+
+    await fileService.createFile(
+      path,
+    );
+
+    await loadProjectFiles();
+
+    await fileOpenerService.openFile(
+      path: path,
+      editorProvider:
+          context.read<EditorProvider>(),
+    );
   }
 
   @override
@@ -72,6 +148,16 @@ class _ExplorerPanelState
                           FontWeight.bold,
                     ),
                   ),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.add,
+                    color:
+                        Colors.white70,
+                    size: 18,
+                  ),
+                  onPressed:
+                      createNewFile,
                 ),
                 IconButton(
                   icon: const Icon(
