@@ -20,12 +20,10 @@ class _ExplorerPanelState
   static const String projectRoot =
       '/storage/emulated/0/FlutterProjects/MobIDE/lib';
 
-  final ProjectExplorerService
-      explorerService =
+  final ProjectExplorerService explorerService =
       ProjectExplorerService();
 
-  final FileOpenerService
-      fileOpenerService =
+  final FileOpenerService fileOpenerService =
       FileOpenerService();
 
   final FileService fileService =
@@ -71,16 +69,13 @@ class _ExplorerPanelState
             autofocus: true,
             decoration:
                 const InputDecoration(
-              hintText:
-                  'example.dart',
+              hintText: 'example.dart',
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(
-                  context,
-                );
+                Navigator.pop(context);
               },
               child: const Text(
                 'Cancel',
@@ -140,16 +135,13 @@ class _ExplorerPanelState
             autofocus: true,
             decoration:
                 const InputDecoration(
-              hintText:
-                  'folder_name',
+              hintText: 'folder_name',
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(
-                  context,
-                );
+                Navigator.pop(context);
               },
               child: const Text(
                 'Cancel',
@@ -178,6 +170,76 @@ class _ExplorerPanelState
 
     await fileService.createFolder(
       '$projectRoot/$folderName',
+    );
+
+    await loadProjectFiles();
+  }
+
+  Future<void> renameNode(
+    ProjectFile file,
+  ) async {
+    final controller =
+        TextEditingController(
+      text: file.name,
+    );
+
+    final newName =
+        await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            file.isDirectory
+                ? 'Rename Folder'
+                : 'Rename File',
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Cancel',
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                  controller.text.trim(),
+                );
+              },
+              child: const Text(
+                'Rename',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (newName == null ||
+        newName.isEmpty ||
+        newName == file.name) {
+      return;
+    }
+
+    final parentPath =
+        file.path.substring(
+      0,
+      file.path.lastIndexOf('/'),
+    );
+
+    final newPath =
+        '$parentPath/$newName';
+
+    await fileService.renamePath(
+      oldPath: file.path,
+      newPath: newPath,
     );
 
     await loadProjectFiles();
@@ -266,11 +328,27 @@ class _ExplorerPanelState
           Icons.folder,
           color: Colors.amber,
         ),
-        title: Text(
-          file.name,
-          style: const TextStyle(
-            color: Colors.white70,
-          ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                file.name,
+                style: const TextStyle(
+                  color: Colors.white70,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.edit,
+                size: 16,
+                color: Colors.white54,
+              ),
+              onPressed: () {
+                renameNode(file);
+              },
+            ),
+          ],
         ),
         children: file.children
             .map(
@@ -292,11 +370,27 @@ class _ExplorerPanelState
         Icons.insert_drive_file,
         color: Colors.lightBlue,
       ),
-      title: Text(
-        file.name,
-        style: const TextStyle(
-          color: Colors.white70,
-        ),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              file.name,
+              style: const TextStyle(
+                color: Colors.white70,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.edit,
+              size: 16,
+              color: Colors.white54,
+            ),
+            onPressed: () {
+              renameNode(file);
+            },
+          ),
+        ],
       ),
       onTap: () async {
         await fileOpenerService.openFile(
