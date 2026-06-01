@@ -1,27 +1,125 @@
-import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../models/open_file.dart';
-import '../providers/editor_provider.dart';
+import '../editor/providers/editor_provider.dart';
+import '../editor/services/file_opener_service.dart';
+import '../projects/models/project_file.dart';
+import '../projects/project_explorer_service.dart';
 
-class FileOpenerService {
-  Future<void> openFile({
-    required String path,
-    required EditorProvider editorProvider,
-  }) async {
-    final file = File(path);
+class ExplorerPanel extends StatefulWidget {
+  const ExplorerPanel({super.key});
 
-    if (!await file.exists()) {
+  @override
+  State<ExplorerPanel> createState() => _ExplorerPanelState();
+}
+
+class _ExplorerPanelState extends State<ExplorerPanel> {
+  final ProjectExplorerService explorerService =
+      ProjectExplorerService();
+
+  final FileOpenerService fileOpenerService =
+      FileOpenerService();
+
+  List<ProjectFile> files = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadProjectFiles();
+  }
+
+  Future<void> loadProjectFiles() async {
+    final result =
+        await explorerService.loadFiles(
+      '/storage/emulated/0/FlutterProjects/MobIDE/lib',
+    );
+
+    if (!mounted) {
       return;
     }
 
-    final content = await file.readAsString();
+    setState(() {
+      files = result;
+    });
+  }
 
-    final openFile = OpenFile(
-      path: path,
-      name: path.split('/').last,
-      content: content,
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 260,
+      color: const Color(0xFF252526),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(12),
+            child: Text(
+              'EXPLORER',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              children:
+                  files.map(buildNode).toList(),
+            ),
+          ),
+        ],
+      ),
     );
+  }
 
-    editorProvider.openFile(openFile);
+  Widget buildNode(ProjectFile file) {
+    if (file.isDirectory) {
+      return ExpansionTile(
+        leading: const Icon(
+          Icons.folder,
+          color: Colors.amber,
+        ),
+        title: Text(
+          file.name,
+          style: const TextStyle(
+            color: Colors.white70,
+          ),
+        ),
+        children: file.children
+            .map(
+              (child) => Padding(
+                padding:
+                    const EdgeInsets.only(
+                  left: 12,
+                ),
+                child: buildNode(child),
+              ),
+            )
+            .toList(),
+      );
+    }
+
+    return ListTile(
+      dense: true,
+      leading: const Icon(
+        Icons.insert_drive_file,
+        color: Colors.lightBlue,
+      ),
+      title: Text(
+        file.name,
+        style: const TextStyle(
+          color: Colors.white70,
+        ),
+      ),
+      onTap: () async {
+        await fileOpenerService.openFile(
+          path: file.path,
+          editorProvider:
+              context.read<EditorProvider>(),
+        );
+      },
+    );
   }
 }

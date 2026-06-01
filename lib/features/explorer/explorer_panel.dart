@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../projects/models/project_file.dart';
 import '../projects/project_explorer_service.dart';
-
 import '../editor/services/file_opener_service.dart';
-import '../editor/providers/editor_provider.dart';
 
 class ExplorerPanel extends StatefulWidget {
   const ExplorerPanel({super.key});
@@ -17,7 +14,6 @@ class ExplorerPanel extends StatefulWidget {
 
 class _ExplorerPanelState
     extends State<ExplorerPanel> {
-
   final ProjectExplorerService
       explorerService =
       ProjectExplorerService();
@@ -48,23 +44,14 @@ class _ExplorerPanelState
 
   @override
   Widget build(BuildContext context) {
-
-    final editorProvider =
-        Provider.of<EditorProvider>(
-      context,
-      listen: false,
-    );
-
     return Container(
-      width: 220,
+      width: 260,
       color: const Color(0xFF252526),
 
       child: Column(
         crossAxisAlignment:
             CrossAxisAlignment.start,
-
         children: [
-
           const Padding(
             padding: EdgeInsets.all(12),
             child: Text(
@@ -72,42 +59,74 @@ class _ExplorerPanelState
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
-                fontWeight:
-                    FontWeight.bold,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
 
           Expanded(
-            child: ListView.builder(
-              itemCount: files.length,
+            child: ListView(
+              children:
+                  files.map((file) {
+                return buildNode(file);
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-              itemBuilder:
-                  (context, index) {
+  Widget buildNode(
+    ProjectFile file,
+  ) {
+    if (file.isDirectory) {
+      return ExpansionTile(
+        title: Text(
+          file.name,
+          style: const TextStyle(
+            color: Colors.white70,
+          ),
+        ),
 
-                final file =
-                    files[index];
+        leading: const Icon(
+          Icons.folder,
+          color: Colors.amber,
+        ),
 
-                return ListTile(
-                  leading: Icon(
-                    file.isDirectory
-                        ? Icons.folder
-                        : Icons
-                            .insert_drive_file,
-                    color:
-                        file.isDirectory
-                            ? Colors.amber
-                            : Colors
-                                .lightBlue,
-                  ),
+        children:
+            file.children.map((child) {
+          return Padding(
+            padding:
+                const EdgeInsets.only(
+              left: 12,
+            ),
+            child: buildNode(child),
+          );
+        }).toList(),
+      );
+    }
 
-                  title: Text(
-                    file.name,
-                    style:
-                        const TextStyle(
-                      color:
-                          Colors.white70,
-                    ),
-                  ),
+    return ListTile(
+      dense: true,
 
-                  onTap
+      leading: const Icon(
+        Icons.insert_drive_file,
+        color: Colors.lightBlue,
+      ),
+
+      title: Text(
+        file.name,
+        style: const TextStyle(
+          color: Colors.white70,
+        ),
+      ),
+
+      onTap: () {
+        fileOpenerService.openFile(
+          file.path,
+        );
+      },
+    );
+  }
+}
