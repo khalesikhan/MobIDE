@@ -123,6 +123,66 @@ class _ExplorerPanelState
     );
   }
 
+  Future<void> createNewFolder() async {
+    final controller =
+        TextEditingController();
+
+    final folderName =
+        await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            'New Folder',
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration:
+                const InputDecoration(
+              hintText:
+                  'folder_name',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                );
+              },
+              child: const Text(
+                'Cancel',
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                  controller.text.trim(),
+                );
+              },
+              child: const Text(
+                'Create',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (folderName == null ||
+        folderName.isEmpty) {
+      return;
+    }
+
+    await fileService.createFolder(
+      '$projectRoot/$folderName',
+    );
+
+    await loadProjectFiles();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -156,8 +216,21 @@ class _ExplorerPanelState
                         Colors.white70,
                     size: 18,
                   ),
+                  tooltip: 'New File',
                   onPressed:
                       createNewFile,
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.create_new_folder,
+                    color:
+                        Colors.white70,
+                    size: 18,
+                  ),
+                  tooltip:
+                      'New Folder',
+                  onPressed:
+                      createNewFolder,
                 ),
                 IconButton(
                   icon: const Icon(
@@ -166,6 +239,7 @@ class _ExplorerPanelState
                         Colors.white70,
                     size: 18,
                   ),
+                  tooltip: 'Refresh',
                   onPressed:
                       loadProjectFiles,
                 ),
