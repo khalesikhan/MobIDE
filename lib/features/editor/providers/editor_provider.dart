@@ -62,6 +62,14 @@ class EditorProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+  
+  void closeAllTabs() {
+  _openFiles.clear();
+
+  _activeIndex = -1;
+
+  notifyListeners();
+}
 
   bool isTabDirty(int index) {
     if (index < 0 || index >= _openFiles.length) {
@@ -70,7 +78,13 @@ class EditorProvider extends ChangeNotifier {
 
     return _openFiles[index].isDirty;
   }
-
+   
+   bool hasDirtyFiles() {
+  return _openFiles.any(
+    (file) => file.isDirty,
+  );
+}
+   
   void updateContent(String content) {
     if (_activeIndex < 0 || _activeIndex >= _openFiles.length) {
       return;
@@ -102,7 +116,24 @@ class EditorProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+  
+  Future<void> saveAllFiles() async {
+  for (int i = 0; i < _openFiles.length; i++) {
+    final file = _openFiles[i];
 
+    await _fileService.writeFile(
+      path: file.path,
+      content: file.content,
+    );
+
+    _openFiles[i] = file.copyWith(
+      isDirty: false,
+    );
+  }
+
+  notifyListeners();
+}
+  
   void markSaved() {
     if (_activeIndex < 0 || _activeIndex >= _openFiles.length) {
       return;

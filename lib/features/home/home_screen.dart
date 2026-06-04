@@ -74,6 +74,85 @@ class HomeScreen extends StatelessWidget {
                             );
                           },
                         ),
+                        IconButton(
+  icon: const Icon(
+    Icons.save_as,
+    color: Colors.white,
+  ),
+  tooltip: 'Save All Files',
+  onPressed: () async {
+    await editorProvider.saveAllFiles();
+
+    if (!context.mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'All files saved',
+        ),
+      ),
+    );
+  },
+),
+         IconButton(
+  icon: const Icon(
+    Icons.close_fullscreen,
+    color: Colors.white,
+  ),
+  tooltip: 'Close All Tabs',
+  onPressed: () async {
+    if (editorProvider.hasDirtyFiles()) {
+      final confirm =
+          await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text(
+              'Unsaved Changes',
+            ),
+            content: const Text(
+              'Close all tabs without saving?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    false,
+                  );
+                },
+                child: const Text(
+                  'Cancel',
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    true,
+                  );
+                },
+                child: const Text(
+                  'Close All',
+                ),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirm != true) {
+        return;
+      }
+    }
+
+    editorProvider.closeAllTabs();
+  },
+),
 
                         const SizedBox(width: 8),
                       ],
