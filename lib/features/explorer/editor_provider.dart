@@ -5,6 +5,7 @@ import '../../../shared/services/file_service.dart';
 
 class EditorProvider extends ChangeNotifier {
   final List<OpenFile> _openFiles = [];
+
   final FileService _fileService = FileService();
 
   int _activeIndex = -1;
@@ -33,6 +34,7 @@ class EditorProvider extends ChangeNotifier {
     }
 
     _openFiles.add(file);
+
     _activeIndex = _openFiles.length - 1;
 
     notifyListeners();
@@ -44,6 +46,7 @@ class EditorProvider extends ChangeNotifier {
     }
 
     _activeIndex = index;
+
     notifyListeners();
   }
 
@@ -62,15 +65,18 @@ class EditorProvider extends ChangeNotifier {
 
     notifyListeners();
   }
-
-  bool isTabDirty(int index) {
-    if (index < 0 || index >= _openFiles.length) {
-      return false;
-    }
-
-    return _openFiles[index].isDirty;
+  
+  bool isTabDirty(
+  int index,
+) {
+  if (index < 0 ||
+      index >= _openFiles.length) {
+    return false;
   }
 
+  return _openFiles[index].isDirty;
+}
+  
   void updateContent(String content) {
     if (_activeIndex < 0 || _activeIndex >= _openFiles.length) {
       return;
@@ -98,7 +104,9 @@ class EditorProvider extends ChangeNotifier {
       content: current.content,
     );
 
-    _openFiles[_activeIndex] = current.copyWith(isDirty: false);
+    _openFiles[_activeIndex] = current.copyWith(
+      isDirty: false,
+    );
 
     notifyListeners();
   }
@@ -110,7 +118,9 @@ class EditorProvider extends ChangeNotifier {
 
     final current = _openFiles[_activeIndex];
 
-    _openFiles[_activeIndex] = current.copyWith(isDirty: false);
+    _openFiles[_activeIndex] = current.copyWith(
+      isDirty: false,
+    );
 
     notifyListeners();
   }

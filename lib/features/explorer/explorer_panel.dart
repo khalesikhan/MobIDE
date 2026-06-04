@@ -31,10 +31,21 @@ FileService();
 
 List<ProjectFile> files = [];
 
+List<ProjectFile> filteredFiles = [];
+
+final TextEditingController
+    searchController =
+        TextEditingController();
+
 @override
 void initState() {
 super.initState();
 loadProjectFiles();
+}
+@override
+void dispose() {
+  searchController.dispose();
+  super.dispose();
 }
 
 Future<void> loadProjectFiles() async {
@@ -47,8 +58,9 @@ if (!mounted) {
   return;  
 }  
 
-setState(() {  
-  files = result;  
+setState(() {
+  files = result;
+  filteredFiles = result;
 });
 
 }
@@ -118,6 +130,30 @@ await fileOpenerService.openFile(
       context.read<EditorProvider>(),  
 );
 
+}
+
+void filterFiles(
+  String query,
+) {
+  if (query.trim().isEmpty) {
+    setState(() {
+      filteredFiles = files;
+    });
+    return;
+  }
+
+  final lowerQuery =
+      query.toLowerCase();
+
+  setState(() {
+    filteredFiles = files.where(
+      (file) {
+        return file.name
+            .toLowerCase()
+            .contains(lowerQuery);
+      },
+    ).toList();
+  });
 }
 
 Future<void> createNewFolder() async {
@@ -358,7 +394,75 @@ Future<void> createFileInFolder(
   final path =
       '${folder.path}/$fileName';
 
-  await fileService.createFile(
+await fileService.createFile(
+  path,
+);
+
+await loadProjectFiles();
+
+await fileOpenerService.openFile(
+  path: path,
+  editorProvider:
+      context.read<EditorProvider>(),
+);
+}
+
+Future<void> createFolderInFolder(
+  ProjectFile folder,
+) async {
+  final controller =
+      TextEditingController();
+
+  final folderName =
+      await showDialog<String>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text(
+          'New Folder',
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration:
+              const InputDecoration(
+            hintText: 'folder_name',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Cancel',
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                controller.text.trim(),
+              );
+            },
+            child: const Text(
+              'Create',
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (folderName == null ||
+      folderName.isEmpty) {
+    return;
+  }
+
+  final path =
+      '${folder.path}/$folderName';
+
+  await fileService.createFolder(
     path,
   );
 
@@ -427,10 +531,40 @@ loadProjectFiles,
 ],
 ),
 ),
+
+Padding(
+  padding: const EdgeInsets.symmetric(
+    horizontal: 8,
+  ),
+  child: TextField(
+    controller: searchController,
+    onChanged: filterFiles,
+    style: const TextStyle(
+      color: Colors.white,
+    ),
+    decoration: const InputDecoration(
+      hintText: 'Search...',
+      hintStyle: TextStyle(
+        color: Colors.white54,
+      ),
+      prefixIcon: Icon(
+        Icons.search,
+        color: Colors.white54,
+      ),
+      border: OutlineInputBorder(),
+      isDense: true,
+    ),
+  ),
+),
+const SizedBox(
+  height: 8,
+),
+
 Expanded(
 child: ListView(
 children:
-files.map(buildNode).toList(),
+filteredFiles
+.map(buildNode).toList(),
 ),
 ),
 ],
@@ -489,6 +623,17 @@ Widget buildNode(
   onPressed: () {
   createFileInFolder(file);
 },
+),
+IconButton(
+  icon: const Icon(
+    Icons.create_new_folder,
+    size: 16,
+    color: Colors.lightGreen,
+  ),
+  tooltip: 'New Folder',
+  onPressed: () {
+    createFolderInFolder(file);
+  },
 ),
         ],
       ),
