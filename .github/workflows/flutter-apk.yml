@@ -22,11 +22,18 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
 
-      - name: Get dependencies
+      - name: Show Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
+      - name: Run Flutter doctor
+        run: flutter doctor -v
+
+      - name: Build APK (release)
         run: flutter build apk --release
 
       - name: Upload APK
